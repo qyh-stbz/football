@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Runs football_env on OpenAI's ppo2."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -27,6 +28,8 @@ from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
 from baselines.ppo2 import ppo2
 import gfootball.env as football_env
 from gfootball.examples import models  
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 
 FLAGS = flags.FLAGS
