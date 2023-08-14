@@ -7,8 +7,6 @@ __pycache__
 dist/
 # virtual environment
 football-env*/
-setup.py
-requirements.txt
 # CMake related directories and files
 third_party/gfootball_engine/build*
 third_party/gfootball_engine/CMakeFiles/

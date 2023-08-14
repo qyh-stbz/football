@@ -182,7 +182,7 @@ setup(
     # If you change the requirements here please don't forget to change the requirements.txt too
     install_requires=[
         'pygame>=1.9.6',
-        'opencv-python==4.3.0.38',
+        'opencv-python',
         'psutil',
         'numpy',
         'gym<=0.21.0',
