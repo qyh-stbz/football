@@ -34,7 +34,7 @@ tf.disable_v2_behavior()
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('level', 'academy_empty_goal_close',
+flags.DEFINE_string('level', '3_vs_3',
                     'Defines type of problem being solved')
 flags.DEFINE_enum('state', 'extracted_stacked', ['extracted',
                                                  'extracted_stacked'],
@@ -95,7 +95,6 @@ def train(_):
   # Import tensorflow after we create environments. TF is not fork sake, and
   # we could be using TF as part of environment if one of the players is
   # controlled by an already trained model.
-  import tensorflow.compat.v1 as tf
   ncpu = multiprocessing.cpu_count()
   config = tf.ConfigProto(allow_soft_placement=True,
                           intra_op_parallelism_threads=ncpu,
