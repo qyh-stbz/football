@@ -20,15 +20,15 @@
 
 class GameEnv;
 class Tracker;
-Tracker* GetTracker();
-GameEnv* GetGame();
+Tracker *GetTracker();
+GameEnv *GetGame();
 
-void DoValidation(int line, const char* file);
+void DoValidation(int line, const char *file);
 
 // Uncomment line below to enable validation.
 // #define FULL_VALIDATION 1
 #ifdef FULL_VALIDATION
-  #define DO_VALIDATION DoValidation(__LINE__, __FILE__);
+#define DO_VALIDATION DoValidation(__LINE__, __FILE__);
 #else
 #define DO_VALIDATION ;
 #endif
@@ -54,15 +54,18 @@ void DoValidation(int line, const char* file);
 #define SHARED_PTR boost::shared_ptr
 #define WEAK_PTR boost::weak_ptr
 
-enum e_RenderingMode {
+enum e_RenderingMode
+{
   e_Disabled,
   e_Onscreen,
   e_Offscreen
 };
 
-class GameConfig {
- public:
-  static SHARED_PTR<GameConfig> make() {
+class GameConfig
+{
+public:
+  static SHARED_PTR<GameConfig> make()
+  {
     return SHARED_PTR<GameConfig>(new GameConfig());
   }
   // Is rendering enabled.
@@ -73,64 +76,81 @@ class GameConfig {
   int physics_steps_per_frame = 10;
   int render_resolution_x = 1280;
   int render_resolution_y = 720;
-  std::string updatePath(const std::string& path) {
+  std::string updatePath(const std::string &path)
+  {
 #ifdef WIN32
     boost::filesystem::path boost_path(path);
-    if (boost_path.is_absolute()) {
+    if (boost_path.is_absolute())
+    {
       return path;
     }
     boost::filesystem::path data_dir_boost(data_dir);
     data_dir_boost /= boost_path;
     return data_dir_boost.string();
 #else
-    if (path[0] == '/') {
+    if (path[0] == '/')
+    {
       return path;
     }
     return data_dir + '/' + path;
 #endif
   }
-  void ProcessState(EnvState* state) {
+  void ProcessState(EnvState *state)
+  {
     state->process(data_dir);
     state->process(physics_steps_per_frame);
     state->process(render_resolution_x);
     state->process(render_resolution_y);
   }
- private:
-  GameConfig() { }
+
+private:
+  GameConfig() {}
   friend GameEnv;
 };
 
-struct ScenarioConfig {
- public:
-  static SHARED_PTR<ScenarioConfig> make() {
+struct ScenarioConfig
+{
+public:
+  static SHARED_PTR<ScenarioConfig> make()
+  {
     return SHARED_PTR<ScenarioConfig>(new ScenarioConfig());
   }
-  bool DynamicPlayerSelection() {
+  bool DynamicPlayerSelection()
+  {
     ComputeCache();
     return cached_dynamic_player_selection;
   }
-  int ControllableLeftPlayers() {
+  int ControllableLeftPlayers()
+  {
     ComputeCache();
     return cached_controllable_left_players;
   }
-  int ControllableRightPlayers() {
+  int ControllableRightPlayers()
+  {
     ComputeCache();
     return cached_controllable_right_players;
   }
-  bool LeftTeamOwnsBall() { DO_VALIDATION;
+  bool LeftTeamOwnsBall()
+  {
+    DO_VALIDATION;
     float leftDistance = 1000000;
     float rightDistance = 1000000;
-    for (auto& player : left_team) { DO_VALIDATION;
+    for (auto &player : left_team)
+    {
+      DO_VALIDATION;
       leftDistance = std::min(leftDistance,
-          (player.start_position - ball_position).GetLength());
+                              (player.start_position - ball_position).GetLength());
     }
-    for (auto& player : right_team) { DO_VALIDATION;
+    for (auto &player : right_team)
+    {
+      DO_VALIDATION;
       rightDistance = std::min(rightDistance,
-          (player.start_position - ball_position).GetLength());
+                               (player.start_position - ball_position).GetLength());
     }
     return leftDistance < rightDistance;
   }
-  void ProcessStateConstant(EnvState* state) {
+  void ProcessStateConstant(EnvState *state)
+  {
     cache_computed = false;
     state->process(ball_position);
     int size = left_team.size();
@@ -154,15 +174,18 @@ struct ScenarioConfig {
     state->process(control_all_players);
   }
 
-  void ProcessState(EnvState* state) {
+  void ProcessState(EnvState *state)
+  {
     cache_computed = false;
     state->process(real_time);
     state->process(game_engine_random_seed);
     state->process(reverse_team_processing);
-    for (auto& p : left_team) {
+    for (auto &p : left_team)
+    {
       p.ProcessState(state);
     }
-    for (auto& p : right_team) {
+    for (auto &p : right_team)
+    {
       p.ProcessState(state);
     }
   }
@@ -178,7 +201,7 @@ struct ScenarioConfig {
   int right_agents = 0;
   // Whether to use magnet logic (that automatically pushes active player
   // towards the ball).
-  bool use_magnet = true;
+  bool use_magnet = false;
   // Are offsides enabled.
   bool offsides = true;
   // Should game run in "real time", ie. aiming at 100 physics animations
@@ -200,27 +223,33 @@ struct ScenarioConfig {
   bool control_all_players = false;
   int second_half = 999999999;
 
- private:
-  ScenarioConfig() { }
-  void ComputeCache() {
-    if (cache_computed) {
+private:
+  ScenarioConfig() {}
+  void ComputeCache()
+  {
+    if (cache_computed)
+    {
       return;
     }
     cached_controllable_left_players = 0;
     cached_controllable_right_players = 0;
-    for (auto& p : left_team) {
-      if (p.controllable) {
+    for (auto &p : left_team)
+    {
+      if (p.controllable)
+      {
         cached_controllable_left_players++;
       }
     }
-    for (auto& p : right_team) {
-      if (p.controllable) {
+    for (auto &p : right_team)
+    {
+      if (p.controllable)
+      {
         cached_controllable_right_players++;
       }
     }
     cached_dynamic_player_selection =
         !((cached_controllable_left_players == left_agents || left_agents == 0) &&
-        (cached_controllable_right_players == right_agents || right_agents == 0));
+          (cached_controllable_right_players == right_agents || right_agents == 0));
     cache_computed = true;
   }
   int cached_controllable_left_players = -1;
@@ -230,16 +259,18 @@ struct ScenarioConfig {
   friend GameEnv;
 };
 
-enum GameState {
+enum GameState
+{
   game_created,
   game_initiated,
   game_running,
   game_done
 };
 
-class GameContext {
- public:
-  GameContext() : rng(BaseGenerator(), Distribution()), rng_non_deterministic(BaseGenerator(), Distribution()) { }
+class GameContext
+{
+public:
+  GameContext() : rng(BaseGenerator(), Distribution()), rng_non_deterministic(BaseGenerator(), Distribution()) {}
   GraphicsSystem graphicsSystem;
   boost::shared_ptr<GameTask> gameTask;
   boost::shared_ptr<MenuTask> menuTask;
@@ -254,7 +285,7 @@ class GameContext {
   TTF_Font *defaultFont = nullptr;
   TTF_Font *defaultOutlineFont = nullptr;
 
-  std::vector<AIControlledKeyboard*> controllers;
+  std::vector<AIControlledKeyboard *> controllers;
   ObjectFactory object_factory;
   ResourceManager<GeometryData> geometry_manager;
   ResourceManager<Surface> surface_manager;
@@ -278,18 +309,18 @@ class GameContext {
   int stablePlayerCount = 0;
   BiasedOffsets emptyOffsets;
   boost::shared_ptr<AnimCollection> anims;
-  std::map<Animation*, std::vector<Vector3>> animPositionCache;
+  std::map<Animation *, std::vector<Vector3>> animPositionCache;
   std::map<Vector3, Vector3> colorCoords;
   int step = 0;
   int tracker_disabled = 1;
   long tracker_pos = 0;
-  void ProcessState(EnvState* state);
+  void ProcessState(EnvState *state);
 };
 
 class Match;
 
-void SetGame(GameEnv* c);
-GameContext& GetContext();
+void SetGame(GameEnv *c);
+GameContext &GetContext();
 boost::shared_ptr<Scene2D> GetScene2D();
 boost::shared_ptr<Scene3D> GetScene3D();
 GraphicsSystem *GetGraphicsSystem();
@@ -297,40 +328,49 @@ boost::shared_ptr<GameTask> GetGameTask();
 boost::shared_ptr<MenuTask> GetMenuTask();
 
 Properties *GetConfiguration();
-ScenarioConfig& GetScenarioConfig();
-GameConfig& GetGameConfig();
+ScenarioConfig &GetScenarioConfig();
+GameConfig &GetGameConfig();
 
-const std::vector<AIControlledKeyboard*> &GetControllers();
+const std::vector<AIControlledKeyboard *> &GetControllers();
 
-void run_game(Properties* input_config, bool render);
+void run_game(Properties *input_config, bool render);
 void randomize(unsigned int seed);
 void quit_game();
 #ifndef WIN32
-int main(int argc, char** argv);
+int main(int argc, char **argv);
 #endif
 
-class Tracker {
- public:
-  void setup(long start, long end) {
+class Tracker
+{
+public:
+  void setup(long start, long end)
+  {
     this->start = start;
     this->end = end;
     GetContext().tracker_disabled = 0;
     GetContext().tracker_pos = 0;
   }
-  void setDisabled(bool disabled) {
+  void setDisabled(bool disabled)
+  {
     GetContext().tracker_disabled += disabled ? 1 : -1;
   }
-  bool enabled() {
+  bool enabled()
+  {
     return GetContext().tracker_disabled == 0;
   }
-  inline void verify(int line, const char* file) {
-    if (GetContext().tracker_disabled) return;
+  inline void verify(int line, const char *file)
+  {
+    if (GetContext().tracker_disabled)
+      return;
     GetContext().tracker_pos++;
-    if (GetContext().tracker_pos < start || GetContext().tracker_pos > end) return;
+    if (GetContext().tracker_pos < start || GetContext().tracker_pos > end)
+      return;
     std::unique_lock<std::mutex> lock(mtx);
     std::string trace;
-    if (waiting_game == nullptr) {
-      if (GetContext().tracker_pos % 10000 == 0) {
+    if (waiting_game == nullptr)
+    {
+      if (GetContext().tracker_pos % 10000 == 0)
+      {
         std::cout << "Validating: " << GetContext().tracker_pos << std::endl;
       }
       waiting_stack_trace = trace;
@@ -346,8 +386,9 @@ class Tracker {
     waiting_game = nullptr;
     cv.notify_one();
   }
- private:
-  void verify_snapshot(long pos, int line, const char* file, const std::string& trace);
+
+private:
+  void verify_snapshot(long pos, int line, const char *file, const std::string &trace);
   // Tweak start and end to verify that line numbers match for
   // each call in the verification range (2 bytes / call).
   long start = 0LL;
@@ -355,9 +396,9 @@ class Tracker {
   bool verify_stack_trace = true;
   std::mutex mtx;
   std::condition_variable cv;
-  GameEnv* waiting_game = nullptr;
+  GameEnv *waiting_game = nullptr;
   int waiting_line;
-  const char* waiting_file;
+  const char *waiting_file;
   std::string waiting_stack_trace;
 };
 

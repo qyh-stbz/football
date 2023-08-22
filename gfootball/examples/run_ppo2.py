@@ -28,13 +28,12 @@ from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
 from baselines.ppo2 import ppo2
 import gfootball.env as football_env
 from gfootball.examples import models  
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+
 
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('level', '3_vs_3',
+flags.DEFINE_string('level', '5_vs_5',
                     'Defines type of problem being solved')
 flags.DEFINE_enum('state', 'extracted_stacked', ['extracted',
                                                  'extracted_stacked'],
@@ -45,7 +44,7 @@ flags.DEFINE_enum('reward_experiment', 'scoring',
 flags.DEFINE_enum('policy', 'cnn', ['cnn', 'lstm', 'mlp', 'impala_cnn',
                                     'gfootball_impala_cnn'],
                   'Policy architecture')
-flags.DEFINE_integer('num_timesteps', int(2e6),
+flags.DEFINE_integer('num_timesteps', int(2e7),
                      'Number of timesteps to run for.')
 flags.DEFINE_integer('num_envs', 8,
                      'Number of environments to run in parallel.')
@@ -95,11 +94,13 @@ def train(_):
   # Import tensorflow after we create environments. TF is not fork sake, and
   # we could be using TF as part of environment if one of the players is
   # controlled by an already trained model.
+  import tensorflow.compat.v1 as tf
   ncpu = multiprocessing.cpu_count()
   config = tf.ConfigProto(allow_soft_placement=True,
                           intra_op_parallelism_threads=ncpu,
                           inter_op_parallelism_threads=ncpu)
-  config.gpu_options.allow_growth = True
+  config.gpu_options.per_process_gpu_memory_fraction = 0.9
+
   tf.Session(config=config).__enter__()
 
   ppo2.learn(network=FLAGS.policy,
@@ -113,7 +114,7 @@ def train(_):
              gamma=FLAGS.gamma,
              ent_coef=FLAGS.ent_coef,
              lr=FLAGS.lr,
-             log_interval=1,
+             log_interval=10,
              save_interval=FLAGS.save_interval,
              cliprange=FLAGS.cliprange,
              load_path=FLAGS.load_path)

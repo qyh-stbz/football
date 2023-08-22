@@ -187,21 +187,30 @@ void quit_game() {
 
 void Tracker::verify_snapshot(long pos, int line, const char* file,
                               const std::string& trace) {
+  // 检查游戏快照是否正确
   bool failure = false;
   long waiting_pos = waiting_game->context->tracker_pos;
-  if (pos != waiting_pos || line != waiting_line ||
+  // 检查游戏快照位置是否和等待游戏快照位置相同
+  if (pos!= waiting_pos || line!= waiting_line ||
       strcmp(file, waiting_file)) {
     failure = true;
   }
+  // 检查游戏快照是否失败
   if (!failure) {
+    // 如果游戏任务没有获取到比赛，则返回
     if (!game->context->gameTask->GetMatch()) return;
+    // 将游戏快照复制到环境
     EnvState reader1(game, "");
     game->ProcessState(&reader1);
+    // 将等待游戏快照复制到环境
     EnvState reader2(waiting_game, "", reader1.GetState());
     waiting_game->ProcessState(&reader2);
+    // 检查环境是否失败
     failure = reader2.isFailure();
   }
+  // 检查游戏快照是否失败
   if (failure) {
+    // 输出错误信息
     std::cout << "Validation range: " << start << " - " << end << std::endl;
     std::cout << "Position: " << pos << " vs " << waiting_pos << std::endl;
     std::cout << "Line: " << line << " vs " << waiting_line << std::endl;
