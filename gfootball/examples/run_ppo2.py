@@ -85,6 +85,7 @@ def create_single_football_env(iprocess):
 
 
 def train(_):
+  os.environ["CUDA_VISIBLE_DEVICES"]='2'
   """Trains a PPO2 policy."""
   vec_env = SubprocVecEnv([
       (lambda _i=i: create_single_football_env(_i))
@@ -99,7 +100,7 @@ def train(_):
   config = tf.ConfigProto(allow_soft_placement=True,
                           intra_op_parallelism_threads=ncpu,
                           inter_op_parallelism_threads=ncpu)
-  config.gpu_options.per_process_gpu_memory_fraction = 0.9
+  config.gpu_options.allow_growth = True
 
   tf.Session(config=config).__enter__()
 
